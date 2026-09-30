@@ -346,6 +346,9 @@
         <span class="sub-hint" id="val-rate-display">44100 Hz</span>
       </label>
       <select id="select-rate" onchange="onParamChange()">
+        <option value="1000">1,000 Hz (極低取樣 - 頻率嚴重混疊)</option>
+        <option value="2000">2,000 Hz (極低通話音質)</option>
+        <option value="4000">4,000 Hz (窄頻語音對講機)</option>
         <option value="8000">8,000 Hz (電話通話品質)</option>
         <option value="11025">11,025 Hz (早期收音機)</option>
         <option value="22050">22,050 Hz (廣播 FM 品質)</option>
@@ -363,6 +366,7 @@
       <select id="select-bits" onchange="onParamChange()">
         <option value="1">1 Bit (2 階 - 極端方波失真)</option>
         <option value="2">2 Bits (4 階 - 粗糙階梯)</option>
+        <option value="3">3 Bits (8 階 - 8階中度失真)</option>
         <option value="4">4 Bits (16 階 - 復古遊戲感)</option>
         <option value="8">8 Bits (256 階 - 早期電腦聲)</option>
         <option value="16" selected>16 Bits (65,536 階 - CD 高音質)</option>
