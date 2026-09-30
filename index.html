@@ -332,9 +332,10 @@
         <span id="lbl-source">音源選擇 (Audio Source)</span>
       </label>
       <select id="select-source" onchange="onParamChange()">
-        <option value="Classical">交響樂旋律 (Classical Melody)</option>
-        <option value="Retro8Bit">8-Bit 電玩音效 (8-Bit Retro Game)</option>
-        <option value="Sine">純音正弦波 (Pure Sine Wave 440Hz)</option>
+        <option value="SchoolBell" selected>🔔 上下課鐘聲 (School Bell Chime)</option>
+        <option value="Classical">🎻 交響樂旋律 (Classical Melody)</option>
+        <option value="Retro8Bit">👾 8-Bit 電玩音效 (8-Bit Retro Game)</option>
+        <option value="Sine">📻 純音正弦波 (Pure Sine Wave 440Hz)</option>
       </select>
       <span class="sub-hint" id="hint-source">選擇欲實驗的聲波種類</span>
     </div>
@@ -488,6 +489,17 @@ function getAudioSample(type, t) {
     const noteTime = (t * 4) % 4;
     const freq = noteTime < 1 ? 261.63 : noteTime < 2 ? 329.63 : noteTime < 3 ? 392.00 : 523.25;
     return Math.sin(2 * Math.PI * freq * t) > 0 ? 0.7 : -0.7;
+  } else if (type === 'SchoolBell') {
+    // 上下課西敏寺鐘聲 (E4 - G#4 - F#4 - B3, B3 - F#4 - G#4 - E4)
+    const bellFreqs = [329.63, 415.30, 369.99, 246.94, 246.94, 369.99, 415.30, 329.63];
+    const idx = Math.floor((t * 1.6) % bellFreqs.length);
+    const f = bellFreqs[idx];
+    const noteProgress = (t * 1.6) % 1.0;
+    const envelope = Math.exp(-noteProgress * 2.2); // Bell chime decay envelope
+    const b = Math.sin(2 * Math.PI * f * t);
+    const h1 = 0.35 * Math.sin(2 * Math.PI * f * 2.76 * t); // Metallic overtone
+    const h2 = 0.15 * Math.sin(2 * Math.PI * f * 5.4 * t);
+    return ((b + h1 + h2) / 1.4) * envelope;
   } else {
     // Classical Melody
     const freqs = [329.63, 329.63, 349.23, 392.00, 392.00, 349.23, 329.63, 293.66];
@@ -565,7 +577,7 @@ function toggleGrid() {
 }
 
 function resetDefaults() {
-  document.getElementById('select-source').value = "Classical";
+  document.getElementById('select-source').value = "SchoolBell";
   document.getElementById('select-rate').value = "44100";
   document.getElementById('select-bits').value = "16";
   isOriginalMode = false;
