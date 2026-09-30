@@ -1,767 +1,912 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Digitization Lab | 聲音數位化實驗室</title>
-    <!-- External Libraries -->
-    <link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Code:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6.16"></script>
 
-    <style>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Audio Digitization Lab | 聲音數位化實驗室</title>
+  <!-- External Libraries -->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Icons" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Code:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6.16"></script>
+
+  <style>
+    :root {
+      --primary: #0b57d0;
+      --on-primary: #ffffff;
+      --primary-container: #d3e3fd;
+      --surface: #ffffff;
+      --surface-container: #f0f4f9;
+      --surface-container-high: #e9ebf0;
+      --on-surface-default: #1b1c1d;
+      --on-surface-de-emphasis: #444746;
+      --outline: #747775;
+      --stroke-default: #dcdfe5;
+      --chart-1: #1558d6;
+      --chart-2: #046e00;
+      --chart-3: #eaa937;
+      --chart-4: #c0151d;
+      --chart-5: #681da8;
+      --badge-bg: #e8f0fe;
+      --badge-color: #1967d2;
+      --ff-sans: "Google Sans", "Microsoft JhengHei", sans-serif;
+      --ff-mono: "Google Sans Code", monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
       :root {
-        --primary: #0b57d0;
-        --on-primary: #ffffff;
-        --primary-container: #d3e3fd;
-        --surface: #ffffff;
-        --surface-container: #f0f4f9;
-        --surface-container-high: #e9ebf0;
-        --on-surface-default: #1b1c1d;
-        --on-surface-de-emphasis: #444746;
-        --outline: #747775;
-        --stroke-default: #dcdfe5;
-        --chart-1: #1558d6;
-        --chart-2: #046e00;
-        --chart-3: #eaa937;
-        --chart-4: #c0151d;
-        --chart-5: #681da8;
-        --badge-bg: #e8f0fe;
-        --badge-color: #1967d2;
-        --ff-sans: "Google Sans", "Microsoft JhengHei", sans-serif;
-        --ff-mono: "Google Sans Code", monospace;
+        --primary: #a8c7fa;
+        --on-primary: #062e6f;
+        --primary-container: #1f3760;
+        --surface: #101218;
+        --surface-container: #1e2024;
+        --surface-container-high: #2a2b36;
+        --on-surface-default: #ffffff;
+        --on-surface-de-emphasis: #c4c7c5;
+        --outline: #9a9b9c;
+        --stroke-default: #2d2f38;
+        --chart-1: #5292f9;
+        --badge-bg: #1f3760;
+        --badge-color: #a8c7fa;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--ff-sans);
+      background: var(--surface-container);
+      color: var(--on-surface-default);
+      padding: 1rem;
+      line-height: 1.5;
+    }
+
+    .app-card {
+      max-width: 900px;
+      margin: 0 auto;
+      background: var(--surface);
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      border: 1px solid var(--stroke-default);
+    }
+
+    /* Header Style */
+    .app-header {
+      padding: 1.25rem 1.5rem;
+      background: var(--surface);
+      border-bottom: 1px solid var(--stroke-default);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .title-group h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .title-group p {
+      font-size: 0.85rem;
+      color: var(--on-surface-de-emphasis);
+    }
+
+    /* Language Toggle Button */
+    .lang-btn {
+      background: var(--surface-container-high);
+      border: 1px solid var(--outline);
+      color: var(--on-surface-default);
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .lang-btn:hover {
+      background: var(--primary-container);
+      color: var(--primary);
+    }
+
+    /* HUD Metric Banner */
+    .hud-banner {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px;
+      padding: 1rem 1.5rem;
+      background: var(--surface-container);
+      border-bottom: 1px solid var(--stroke-default);
+    }
+
+    .hud-item {
+      background: var(--surface);
+      padding: 10px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke-default);
+      text-align: center;
+    }
+
+    .hud-label {
+      font-size: 0.75rem;
+      color: var(--on-surface-de-emphasis);
+      font-weight: 500;
+      margin-bottom: 2px;
+    }
+
+    .hud-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      font-family: var(--ff-mono);
+    }
+
+    .hud-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: var(--badge-bg);
+      color: var(--badge-color);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    /* Canvas & Visualization Section */
+    .viz-section {
+      position: relative;
+      padding: 1rem 1.5rem;
+    }
+
+    canvas {
+      width: 100%;
+      height: 240px;
+      display: block;
+      background: var(--surface-container);
+      border-radius: 12px;
+      border: 1px solid var(--stroke-default);
+    }
+
+    /* Controls Grid */
+    .controls-grid {
+      padding: 1.25rem 1.5rem;
+      background: var(--surface);
+      border-top: 1px solid var(--stroke-default);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .control-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--on-surface-default);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sub-hint {
+      font-size: 0.75rem;
+      font-weight: 400;
+      color: var(--on-surface-de-emphasis);
+    }
+
+    select,
+    input[type="range"] {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--outline);
+      background: var(--surface-container-high);
+      color: var(--on-surface-default);
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    /* Action Bar */
+    .action-bar {
+      padding: 1rem 1.5rem;
+      background: var(--surface-container);
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border-radius: 24px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: var(--on-primary);
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--surface-container-high);
+      color: var(--on-surface-default);
+      border: 1px solid var(--outline);
+    }
+
+    .btn-secondary.active {
+      background: var(--primary-container);
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+
+    /* Inquiry Challenge & Formula Cards */
+    .challenge-box,
+    .formula-card {
+      margin: 1rem 1.5rem 1rem;
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+    }
+
+    .challenge-box {
+      background: var(--primary-container);
+      border-left: 4px solid var(--primary);
+    }
+
+    .formula-card {
+      background: var(--surface-container);
+      border: 1px solid var(--stroke-default);
+    }
+
+    .challenge-title,
+    .formula-header {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--on-surface-default);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .challenge-title {
+      color: var(--on-primary-container);
+    }
+
+    .challenge-desc {
+      font-size: 0.825rem;
+      color: var(--on-surface-de-emphasis);
+    }
+
+    .formula-general {
+      font-size: 0.825rem;
+      color: var(--on-surface-de-emphasis);
+      background: var(--surface);
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border: 1px solid var(--stroke-default);
+      overflow-x: auto;
+    }
+
+    .formula-step {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-family: var(--ff-mono);
+      font-size: 0.825rem;
+    }
+
+    .step-line {
+      background: var(--surface);
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--stroke-default);
+    }
+
+    .step-line.highlight {
+      background: var(--primary-container);
+      color: var(--primary);
+      font-weight: 700;
+      border-color: var(--primary);
+    }
+
+    .num-val {
+      color: var(--primary);
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="app-card">
+    <!-- Header -->
+    <div class="app-header">
+      <div class="title-group">
+        <h1><span class="material-icons" style="color:var(--primary)">graphic_eq</span> <span
+            id="txt-title">聲音數位化實驗室</span></h1>
+        <p id="txt-subtitle">探索模擬波形如何透過「取樣」與「量化」轉換為數位資料</p>
+      </div>
+      <button class="lang-btn" id="lang-toggle" onclick="toggleLanguage()">
+        <span class="material-icons">language</span> <span id="txt-lang-btn">English</span>
+      </button>
+    </div>
+
+    <!-- HUD Banner -->
+    <div class="hud-banner">
+      <div class="hud-item">
+        <div class="hud-label" id="lbl-hud-size">預估檔案大小 (File Size)</div>
+        <div class="hud-value" id="val-size">861.3 KB</div>
+        <div class="hud-badge" id="badge-size-mode">5秒 Stereo 音效</div>
+      </div>
+      <div class="hud-item">
+        <div class="hud-label" id="lbl-hud-fidelity">音質保真度 (Fidelity)</div>
+        <div class="hud-value" id="val-fidelity">100%</div>
+        <div class="hud-badge" id="badge-quality">CD 品質 (CD Quality)</div>
+      </div>
+      <div class="hud-item">
+        <div class="hud-label" id="lbl-hud-levels">量化階階數 (Quantization Levels)</div>
+        <div class="hud-value" id="val-levels">65,536 階</div>
+        <div class="hud-badge" id="badge-levels">16 Bits ($2^{16}$)</div>
+      </div>
+    </div>
+
+    <!-- Canvas Visualizer -->
+    <div class="viz-section">
+      <canvas id="waveformCanvas"></canvas>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-primary" id="btn-play" onclick="togglePlay()">
+          <span class="material-icons" id="icon-play">play_arrow</span> <span id="txt-play">播放數位音效</span>
+        </button>
+        <button class="btn btn-secondary" id="btn-mode" onclick="toggleAudioMode()">
+          <span class="material-icons">spatial_audio_off</span> <span id="txt-mode">切換為：原音 (A/B Test)</span>
+        </button>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-secondary" id="btn-grid" onclick="toggleGrid()">
+          <span class="material-icons">grid_on</span> <span id="txt-grid">顯示量化階梯線</span>
+        </button>
+        <button class="btn btn-secondary" onclick="resetDefaults()">
+          <span class="material-icons">restart_alt</span> <span id="txt-reset">重設</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Controls Grid -->
+    <div class="controls-grid">
+      <!-- Sound Source -->
+      <div class="control-group">
+        <label class="control-label" for="select-source">
+          <span id="lbl-source">音源選擇 (Audio Source)</span>
+        </label>
+        <select id="select-source" onchange="onParamChange()">
+          <option value="SchoolBell" selected>🔔 上下課鐘聲 (School Bell Chime)</option>
+          <option value="Classical">🎻 交響樂旋律 (Classical Melody)</option>
+          <option value="Retro8Bit">👾 8-Bit 電玩音效 (8-Bit Retro Game)</option>
+          <option value="Sine">📻 純音正弦波 (Pure Sine Wave 440Hz)</option>
+        </select>
+        <span class="sub-hint" id="hint-source">選擇欲實驗的聲波種類</span>
+      </div>
+
+      <!-- Sampling Rate -->
+      <div class="control-group">
+        <label class="control-label" for="select-rate">
+          <span id="lbl-rate">取樣率 Sampling Rate (Hz)</span>
+          <span class="sub-hint" id="val-rate-display">44100 Hz</span>
+        </label>
+        <select id="select-rate" onchange="onParamChange()">
+          <option value="1000">1,000 Hz (極低取樣 - 頻率嚴重混疊)</option>
+          <option value="2000">2,000 Hz (極低通話音質)</option>
+          <option value="4000">4,000 Hz (窄頻語音對講機)</option>
+          <option value="8000">8,000 Hz (電話通話品質)</option>
+          <option value="11025">11,025 Hz (早期收音機)</option>
+          <option value="22050">22,050 Hz (廣播 FM 品質)</option>
+          <option value="44100" selected>44,100 Hz (CD 標準高保真)</option>
+        </select>
+        <span class="sub-hint" id="hint-rate">每秒抽取聲音樣本的次數 (抽樣頻率)</span>
+      </div>
+
+      <!-- Bit Depth -->
+      <div class="control-group">
+        <label class="control-label" for="select-bits">
+          <span id="lbl-bits">位元深度 Bit Depth (Bits)</span>
+          <span class="sub-hint" id="val-bits-display">16 Bits</span>
+        </label>
+        <select id="select-bits" onchange="onParamChange()">
+          <option value="1">1 Bit (2 階 - 極端方波失真)</option>
+          <option value="2">2 Bits (4 階 - 粗糙階梯)</option>
+          <option value="3">3 Bits (8 階 - 8階中度失真)</option>
+          <option value="4">4 Bits (16 階 - 復古遊戲感)</option>
+          <option value="8">8 Bits (256 階 - 早期電腦聲)</option>
+          <option value="16" selected>16 Bits (65,536 階 - CD 高音質)</option>
+        </select>
+        <span class="sub-hint" id="hint-bits">控制振幅分割的細致程度 (量化階數)</span>
+      </div>
+    </div>
+
+    <!-- Calculation Formula Card -->
+    <div class="formula-card">
+      <div class="formula-header">
+        <span class="material-icons" style="color:var(--primary)">calculate</span>
+        <span id="txt-calc-title">聲音檔案大小計算公式 (Audio File Size Formula)</span>
+      </div>
+      <div class="formula-general" id="txt-calc-formula">
+        <b>檔案大小 (Bytes)</b> = 取樣率 (Hz) × (位元深度 bits ÷ 8) × 聲道數 (Stereo=2) × 時間 (秒)
+      </div>
+      <div class="formula-step">
+        <div class="step-line" id="calc-step-1"></div>
+        <div class="step-line highlight" id="calc-step-2"></div>
+      </div>
+    </div>
+
+    <!-- Inquiry Challenge Card for 8th Graders -->
+    <div class="challenge-box">
+      <div class="challenge-title">
+        <span class="material-icons">tips_and_updates</span>
+        <span id="txt-task-title">小小探究</span>
+      </div>
+      <div class="challenge-desc" id="txt-task-desc">
+        👉 試著將<b>「位元深度」</b>調成 <b>2 Bit</b> 並播放聲音！觀察繪圖區中的波形變成了什麼形狀？聽起來像什麼？（提示：量化階數只有 4 階，聲音會被強制變成方波機器人聲哦！）
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Language State (zh: Traditional Chinese, en: English)
+    let lang = 'zh';
+
+    const I18N = {
+      zh: {
+        title: "聲音數位化實驗室",
+        subtitle: "探索模擬波形如何透過「取樣」與「量化」轉換為數位資料",
+        langBtn: "English",
+        hudSize: "預估檔案大小 (5秒容量)",
+        hudFidelity: "音質保真度 (Fidelity)",
+        hudLevels: "量化階階數 (Quantization Levels)",
+        badgeStereo: "5秒 Stereo 雙聲道",
+        play: "播放數位音效",
+        pause: "暫停播放",
+        modeDig: "目前播放：數位音 (按此切換原音)",
+        modeRaw: "目前播放：原始模擬音 (A/B 對比中)",
+        gridOn: "隱藏量化階梯網格",
+        gridOff: "顯示量化階梯線",
+        reset: "重設預設值",
+        source: "音源選擇 (Audio Source)",
+        hintSource: "選擇不同結構的模擬波形進行測試",
+        rate: "取樣率 Sampling Rate (Hz)",
+        hintRate: "每秒抽樣紀錄聲音振幅的次數",
+        bits: "位元深度 Bit Depth (Bits)",
+        hintBits: "振幅分割的解析度階數 ($2^{\\text{bits}}$)",
+        taskTitle: "💡 國中理化與資訊科技小挑戰",
+        taskDesc: "👉 試著將<b>「位元深度」</b>調成 <b>2 Bits</b> 並播放聲音！觀察繪圖區中的波形變成了什麼形狀？聽起來像什麼？（提示：量化階數只有 4 階，平滑波形會被切成極為明顯的階梯方波感與電音聲哦！）",
+        calcTitle: "聲音檔案大小計算公式 (Audio File Size Formula)"
+      },
+      en: {
+        title: "Audio Digitization Lab",
+        subtitle: "Explore how analog waves are converted into digital data via Sampling & Quantization",
+        langBtn: "中文",
+        hudSize: "Est. File Size (5s Clip)",
+        hudFidelity: "Audio Fidelity",
+        hudLevels: "Quantization Levels",
+        badgeStereo: "5s Stereo Audio",
+        play: "Play Digitized Sound",
+        pause: "Pause Audio",
+        modeDig: "Playing: Digitized (Click for Original)",
+        modeRaw: "Playing: Original Wave (A/B Test)",
+        gridOn: "Hide Quantization Grid",
+        gridOff: "Show Quantization Grid",
+        reset: "Reset Defaults",
+        source: "Audio Source",
+        hintSource: "Select analog sound wave type",
+        rate: "Sampling Rate (Hz)",
+        hintRate: "Number of snapshots taken per second",
+        bits: "Bit Depth (Bits)",
+        hintBits: "Resolution of amplitude levels ($2^{\\text{bits}}$)",
+        taskTitle: "💡 Science & Tech Inquiry Challenge",
+        taskDesc: "👉 Try setting <b>Bit Depth</b> to <b>2 Bits</b> and listen! Observe the waveform shape. (Hint: With only 4 quantization levels, smooth waves are cut into sharp retro staircase/square waves!)",
+        calcTitle: "Audio File Size Calculation Formula"
+      }
+    };
+
+    function toggleLanguage() {
+      lang = lang === 'zh' ? 'en' : 'zh';
+      updateLanguageUI();
+    }
+
+    function updateLanguageUI() {
+      const t = I18N[lang];
+      document.getElementById('txt-title').innerText = t.title;
+      document.getElementById('txt-subtitle').innerText = t.subtitle;
+      document.getElementById('txt-lang-btn').innerText = t.langBtn;
+      document.getElementById('lbl-hud-size').innerText = t.hudSize;
+      document.getElementById('lbl-hud-fidelity').innerText = t.hudFidelity;
+      document.getElementById('lbl-hud-levels').innerText = t.hudLevels;
+      document.getElementById('badge-size-mode').innerText = t.badgeStereo;
+      document.getElementById('txt-play').innerText = isPlaying ? t.pause : t.play;
+      document.getElementById('txt-mode').innerText = isOriginalMode ? t.modeRaw : t.modeDig;
+      document.getElementById('txt-grid').innerText = showGrid ? t.gridOn : t.gridOff;
+      document.getElementById('txt-reset').innerText = t.reset;
+      document.getElementById('lbl-source').innerText = t.source;
+      document.getElementById('hint-source').innerText = t.hintSource;
+      document.getElementById('lbl-rate').innerText = t.rate;
+      document.getElementById('hint-rate').innerText = t.hintRate;
+      document.getElementById('lbl-bits').innerText = t.bits;
+      document.getElementById('hint-bits').innerText = t.hintBits;
+      document.getElementById('txt-task-title').innerText = t.taskTitle;
+      document.getElementById('txt-task-desc').innerHTML = t.taskDesc;
+      document.getElementById('txt-calc-title').innerText = t.calcTitle;
+      renderFormula();
+      updateMetrics();
+    }
+
+    function renderFormula() {
+      const el = document.getElementById('txt-calc-formula');
+      if (!el) return;
+      const tex = lang === 'zh'
+        ? "\\text{檔案大小 (Bytes)} = \\text{取樣率 (Hz)} \\times \\frac{\\text{位元深度 (bits)}}{8} \\times \\text{聲道數 (Stereo=2)} \\times \\text{時間 (秒)}"
+        : "\\text{File Size (Bytes)} = \\text{Sampling Rate (Hz)} \\times \\frac{\\text{Bit Depth (bits)}}{8} \\times \\text{Channels (Stereo=2)} \\times \\text{Duration (s)}";
+
+      if (window.katex) {
+        try {
+          window.katex.render(tex, el, { displayMode: true, throwOnError: false });
+          return;
+        } catch(e) {}
+      }
+      
+      el.innerHTML = lang === 'zh'
+        ? "<b>檔案大小 (Bytes)</b> = 取樣率 (Hz) × (位元深度 ÷ 8) × 聲道數 (Stereo=2) × 時間 (秒)"
+        : "<b>File Size (Bytes)</b> = Sampling Rate (Hz) × (Bit Depth ÷ 8) × Channels (Stereo=2) × Duration (s)";
+    }
+
+    // App State
+    let isPlaying = false;
+    let isOriginalMode = false;
+    let showGrid = false;
+    let animTime = 0;
+    let audioCtx = null;
+    let sourceNode = null;
+
+    const canvas = document.getElementById('waveformCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function getAudioSample(type, t) {
+      if (type === 'Sine') {
+        return Math.sin(2 * Math.PI * 440 * t);
+      } else if (type === 'Retro8Bit') {
+        const noteTime = (t * 4) % 4;
+        const freq = noteTime < 1 ? 261.63 : noteTime < 2 ? 329.63 : noteTime < 3 ? 392.00 : 523.25;
+        return Math.sin(2 * Math.PI * freq * t) > 0 ? 0.7 : -0.7;
+      } else if (type === 'SchoolBell') {
+        // 上下課西敏寺鐘聲 (E4 - G#4 - F#4 - B3, B3 - F#4 - G#4 - E4)
+        const bellFreqs = [329.63, 415.30, 369.99, 246.94, 246.94, 369.99, 415.30, 329.63];
+        const idx = Math.floor((t * 1.6) % bellFreqs.length);
+        const f = bellFreqs[idx];
+        const noteProgress = (t * 1.6) % 1.0;
+        const envelope = Math.exp(-noteProgress * 2.2); // Bell chime decay envelope
+        const b = Math.sin(2 * Math.PI * f * t);
+        const h1 = 0.35 * Math.sin(2 * Math.PI * f * 2.76 * t); // Metallic overtone
+        const h2 = 0.15 * Math.sin(2 * Math.PI * f * 5.4 * t);
+        return ((b + h1 + h2) / 1.4) * envelope;
+      } else {
+        // Classical Melody
+        const freqs = [329.63, 329.63, 349.23, 392.00, 392.00, 349.23, 329.63, 293.66];
+        const idx = Math.floor((t * 2) % freqs.length);
+        const f = freqs[idx];
+        const b = Math.sin(2 * Math.PI * f * t);
+        const h1 = 0.3 * Math.sin(2 * Math.PI * f * 2 * t);
+        const h2 = 0.15 * Math.sin(2 * Math.PI * f * 3 * t);
+        return (b + h1 + h2) / 1.45;
+      }
+    }
+
+    function updateMetrics() {
+      const rate = Number(document.getElementById('select-rate').value);
+      const bits = Number(document.getElementById('select-bits').value);
+      const channels = 2; // 立體聲 Stereo
+      const duration = 5;  // 5 秒
+
+      // Detailed File size calculation
+      const totalBytes = rate * (bits / 8) * channels * duration;
+      const sizeKB = totalBytes / 1024;
+      const sizeMB = sizeKB / 1024;
+
+      document.getElementById('val-size').innerText = sizeKB >= 1024 ? `${sizeMB.toFixed(2)} MB` : `${sizeKB.toFixed(1)} KB`;
+
+      // Render Step-by-Step Dynamic Formula Trial Result
+      const step1Html = lang === 'zh' ?
+        `<b>🧮 當前參數帶入：</b> <span class="num-val">${rate.toLocaleString()}</span> Hz × (<span class="num-val">${bits}</span> bits ÷ 8) × <span class="num-val">${channels}</span> 聲道 × <span class="num-val">${duration}</span> 秒` :
+        `<b>🧮 Substitute Values:</b> <span class="num-val">${rate.toLocaleString()}</span> Hz × (<span class="num-val">${bits}</span> bits ÷ 8) × <span class="num-val">${channels}</span> Channels × <span class="num-val">${duration}</span> Sec`;
+
+      const step2Html = lang === 'zh' ?
+        `📊 <b>試算總結果：</b> <b>${totalBytes.toLocaleString()}</b> Bytes ÷ 1024 = <b>${sizeKB.toFixed(2)}</b> KB ${sizeKB >= 1024 ? `(≈ <b>${sizeMB.toFixed(2)}</b> MB)` : ''}` :
+        `📊 <b>Calculation Result:</b> <b>${totalBytes.toLocaleString()}</b> Bytes ÷ 1024 = <b>${sizeKB.toFixed(2)}</b> KB ${sizeKB >= 1024 ? `(≈ <b>${sizeMB.toFixed(2)}</b> MB)` : ''}`;
+
+      const step1El = document.getElementById('calc-step-1');
+      const step2El = document.getElementById('calc-step-2');
+      if (step1El) step1El.innerHTML = step1Html;
+      if (step2El) step2El.innerHTML = step2Html;
+
+      // Fidelity calculation
+      const fidelity = Math.round(((rate / 44100) * 0.5 + (bits / 16) * 0.5) * 100);
+      document.getElementById('val-fidelity').innerText = `${fidelity}%`;
+
+      // Levels
+      const levels = Math.pow(2, bits);
+      document.getElementById('val-levels').innerText = `${levels.toLocaleString()} ${lang === 'zh' ? '階' : 'levels'}`;
+      document.getElementById('badge-levels').innerText = `${bits} Bits (2^${bits})`;
+
+      // Display badges & hints
+      document.getElementById('val-rate-display').innerText = `${rate.toLocaleString()} Hz`;
+      document.getElementById('val-bits-display').innerText = `${bits} Bits`;
+
+      const qualityBadge = document.getElementById('badge-quality');
+      if (rate >= 44100 && bits >= 16) {
+        qualityBadge.innerText = lang === 'zh' ? "CD 無損音質" : "CD Quality";
+        qualityBadge.style.background = "var(--badge-bg)";
+      } else if (rate <= 8000 || bits <= 2) {
+        qualityBadge.innerText = lang === 'zh' ? "⚠️ 高失真模式" : "⚠️ High Distortion";
+        qualityBadge.style.background = "#ffcdd2";
+        qualityBadge.style.color = "#b3261e";
+      } else {
+        qualityBadge.innerText = lang === 'zh' ? "壓縮廣播音質" : "Compressed Audio";
+        qualityBadge.style.background = "var(--surface-container-high)";
+        qualityBadge.style.color = "var(--on-surface-default)";
+      }
+    }
+
+    function onParamChange() {
+      updateMetrics();
+      if (isPlaying) {
+        playAudioSynth();
+      }
+    }
+
+    function togglePlay() {
+      isPlaying = !isPlaying;
+      document.getElementById('icon-play').innerText = isPlaying ? 'pause' : 'play_arrow';
+      document.getElementById('txt-play').innerText = isPlaying ? I18N[lang].pause : I18N[lang].play;
+      if (isPlaying) playAudioSynth();
+      else stopAudioSynth();
+    }
+
+    function toggleAudioMode() {
+      isOriginalMode = !isOriginalMode;
+      document.getElementById('btn-mode').classList.toggle('active', isOriginalMode);
+      document.getElementById('txt-mode').innerText = isOriginalMode ? I18N[lang].modeRaw : I18N[lang].modeDig;
+      if (isPlaying) playAudioSynth();
+    }
+
+    function toggleGrid() {
+      showGrid = !showGrid;
+      document.getElementById('btn-grid').classList.toggle('active', showGrid);
+      document.getElementById('txt-grid').innerText = showGrid ? I18N[lang].gridOn : I18N[lang].gridOff;
+    }
+
+    function resetDefaults() {
+      document.getElementById('select-source').value = "SchoolBell";
+      document.getElementById('select-rate').value = "44100";
+      document.getElementById('select-bits').value = "16";
+      isOriginalMode = false;
+      document.getElementById('btn-mode').classList.remove('active');
+      onParamChange();
+    }
+
+    function stopAudioSynth() {
+      if (sourceNode) {
+        try { sourceNode.stop(); } catch (e) { }
+        sourceNode.disconnect();
+        sourceNode = null;
+      }
+    }
+
+    function playAudioSynth() {
+      stopAudioSynth();
+      if (!isPlaying) return;
+
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
       }
 
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --primary: #a8c7fa;
-          --on-primary: #062e6f;
-          --primary-container: #1f3760;
-          --surface: #101218;
-          --surface-container: #1e2024;
-          --surface-container-high: #2a2b36;
-          --on-surface-default: #ffffff;
-          --on-surface-de-emphasis: #c4c7c5;
-          --outline: #9a9b9c;
-          --stroke-default: #2d2f38;
-          --chart-1: #5292f9;
-          --badge-bg: #1f3760;
-          --badge-color: #a8c7fa;
+      const duration = 5;
+      const targetRate = audioCtx.sampleRate;
+      const buffer = audioCtx.createBuffer(1, targetRate * duration, targetRate);
+      const data = buffer.getChannelData(0);
+
+      const sourceType = document.getElementById('select-source').value;
+      const effRate = Number(document.getElementById('select-rate').value);
+      const bits = Number(document.getElementById('select-bits').value);
+      const levels = Math.pow(2, bits);
+
+      for (let i = 0; i < data.length; i++) {
+        const t = i / targetRate;
+        if (isOriginalMode) {
+          data[i] = getAudioSample(sourceType, t);
+        } else {
+          const sampledT = Math.floor(t * effRate) / effRate;
+          const rawVal = getAudioSample(sourceType, sampledT);
+          const clamped = Math.min(1, Math.max(-1, rawVal));
+          const normalized = (clamped + 1) / 2;
+          const qNorm = Math.floor(normalized * (levels - 1)) / Math.max(1, levels - 1);
+          data[i] = qNorm * 2 - 1;
         }
       }
 
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      body {
-        font-family: var(--ff-sans);
-        background: var(--surface-container);
-        color: var(--on-surface-default);
-        padding: 1rem;
-        line-height: 1.5;
-      }
-
-      .app-card {
-        max-width: 900px;
-        margin: 0 auto;
-        background: var(--surface);
-        border-radius: 20px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        overflow: hidden;
-        border: 1px solid var(--stroke-default);
-      }
-
-      /* Header Style */
-      .app-header {
-        padding: 1.25rem 1.5rem;
-        background: var(--surface);
-        border-bottom: 1px solid var(--stroke-default);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 1rem;
-      }
-      .title-group h1 {
-        font-size: 1.35rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .title-group p {
-        font-size: 0.85rem;
-        color: var(--on-surface-de-emphasis);
-      }
-
-      /* Language Toggle Button */
-      .lang-btn {
-        background: var(--surface-container-high);
-        border: 1px solid var(--outline);
-        color: var(--on-surface-default);
-        padding: 6px 14px;
-        border-radius: 20px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 0.85rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: all 0.2s;
-      }
-      .lang-btn:hover {
-        background: var(--primary-container);
-        color: var(--primary);
-      }
-
-      /* HUD Metric Banner */
-      .hud-banner {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-        gap: 12px;
-        padding: 1rem 1.5rem;
-        background: var(--surface-container);
-        border-bottom: 1px solid var(--stroke-default);
-      }
-      .hud-item {
-        background: var(--surface);
-        padding: 10px 14px;
-        border-radius: 12px;
-        border: 1px solid var(--stroke-default);
-        text-align: center;
-      }
-      .hud-label {
-        font-size: 0.75rem;
-        color: var(--on-surface-de-emphasis);
-        font-weight: 500;
-        margin-bottom: 2px;
-      }
-      .hud-value {
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--primary);
-        font-family: var(--ff-mono);
-      }
-      .hud-badge {
-        display: inline-block;
-        font-size: 0.7rem;
-        padding: 2px 8px;
-        border-radius: 10px;
-        background: var(--badge-bg);
-        color: var(--badge-color);
-        font-weight: 600;
-        margin-top: 4px;
-      }
-
-      /* Canvas & Visualization Section */
-      .viz-section {
-        position: relative;
-        padding: 1rem 1.5rem;
-      }
-      canvas {
-        width: 100%;
-        height: 240px;
-        display: block;
-        background: var(--surface-container);
-        border-radius: 12px;
-        border: 1px solid var(--stroke-default);
-      }
-
-      /* Controls Grid */
-      .controls-grid {
-        padding: 1.25rem 1.5rem;
-        background: var(--surface);
-        border-top: 1px solid var(--stroke-default);
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-        gap: 1.25rem;
-      }
-      .control-group {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .control-label {
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: var(--on-surface-default);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .sub-hint {
-        font-size: 0.75rem;
-        font-weight: 400;
-        color: var(--on-surface-de-emphasis);
-      }
-      select, input[type="range"] {
-        padding: 8px 12px;
-        border-radius: 8px;
-        border: 1px solid var(--outline);
-        background: var(--surface-container-high);
-        color: var(--on-surface-default);
-        font-size: 0.9rem;
-        outline: none;
-      }
-
-      /* Action Bar */
-      .action-bar {
-        padding: 1rem 1.5rem;
-        background: var(--surface-container);
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .btn {
-        padding: 10px 18px;
-        border-radius: 24px;
-        border: none;
-        font-weight: 600;
-        font-size: 0.9rem;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: all 0.2s ease;
-      }
-      .btn-primary {
-        background: var(--primary);
-        color: var(--on-primary);
-      }
-      .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-      .btn-secondary {
-        background: var(--surface-container-high);
-        color: var(--on-surface-default);
-        border: 1px solid var(--outline);
-      }
-      .btn-secondary.active {
-        background: var(--primary-container);
-        color: var(--primary);
-        border-color: var(--primary);
-      }
-
-      /* Inquiry Challenge Box for 8th Graders */
-      .challenge-box {
-        margin: 1rem 1.5rem 1.5rem;
-        padding: 1rem;
-        background: var(--primary-container);
-        border-radius: 12px;
-        border-left: 4px solid var(--primary);
-      }
-      .challenge-title {
-        font-weight: 700;
-        font-size: 0.9rem;
-        color: var(--on-primary-container);
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin-bottom: 4px;
-      }
-      .challenge-desc {
-        font-size: 0.825rem;
-        color: var(--on-surface-de-emphasis);
-      }
-    </style>
-</head>
-<body>
-
-<div class="app-card">
-  <!-- Header -->
-  <div class="app-header">
-    <div class="title-group">
-      <h1><span class="material-icons" style="color:var(--primary)">graphic_eq</span> <span id="txt-title">聲音數位化實驗室</span></h1>
-      <p id="txt-subtitle">探索模擬波形如何透過「取樣」與「量化」轉換為數位資料</p>
-    </div>
-    <button class="lang-btn" id="lang-toggle" onclick="toggleLanguage()">
-      <span class="material-icons">language</span> <span id="txt-lang-btn">English</span>
-    </button>
-  </div>
-
-  <!-- HUD Banner -->
-  <div class="hud-banner">
-    <div class="hud-item">
-      <div class="hud-label" id="lbl-hud-size">預估檔案大小 (File Size)</div>
-      <div class="hud-value" id="val-size">861.3 KB</div>
-      <div class="hud-badge" id="badge-size-mode">5秒 Stereo 音效</div>
-    </div>
-    <div class="hud-item">
-      <div class="hud-label" id="lbl-hud-fidelity">音質保真度 (Fidelity)</div>
-      <div class="hud-value" id="val-fidelity">100%</div>
-      <div class="hud-badge" id="badge-quality">CD 品質 (CD Quality)</div>
-    </div>
-    <div class="hud-item">
-      <div class="hud-label" id="lbl-hud-levels">量化階階數 (Quantization Levels)</div>
-      <div class="hud-value" id="val-levels">65,536 階</div>
-      <div class="hud-badge" id="badge-levels">16 Bits ($2^{16}$)</div>
-    </div>
-  </div>
-
-  <!-- Canvas Visualizer -->
-  <div class="viz-section">
-    <canvas id="waveformCanvas"></canvas>
-  </div>
-
-  <!-- Action Bar -->
-  <div class="action-bar">
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-      <button class="btn btn-primary" id="btn-play" onclick="togglePlay()">
-        <span class="material-icons" id="icon-play">play_arrow</span> <span id="txt-play">播放數位音效</span>
-      </button>
-      <button class="btn btn-secondary" id="btn-mode" onclick="toggleAudioMode()">
-        <span class="material-icons">spatial_audio_off</span> <span id="txt-mode">切換為：原音 (A/B Test)</span>
-      </button>
-    </div>
-
-    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-      <button class="btn btn-secondary" id="btn-grid" onclick="toggleGrid()">
-        <span class="material-icons">grid_on</span> <span id="txt-grid">顯示量化階梯線</span>
-      </button>
-      <button class="btn btn-secondary" onclick="resetDefaults()">
-        <span class="material-icons">restart_alt</span> <span id="txt-reset">重設</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- Controls Grid -->
-  <div class="controls-grid">
-    <!-- Sound Source -->
-    <div class="control-group">
-      <label class="control-label" for="select-source">
-        <span id="lbl-source">音源選擇 (Audio Source)</span>
-      </label>
-      <select id="select-source" onchange="onParamChange()">
-        <option value="SchoolBell" selected>🔔 上下課鐘聲 (School Bell Chime)</option>
-        <option value="Classical">🎻 交響樂旋律 (Classical Melody)</option>
-        <option value="Retro8Bit">👾 8-Bit 電玩音效 (8-Bit Retro Game)</option>
-        <option value="Sine">📻 純音正弦波 (Pure Sine Wave 440Hz)</option>
-      </select>
-      <span class="sub-hint" id="hint-source">選擇欲實驗的聲波種類</span>
-    </div>
-
-    <!-- Sampling Rate -->
-    <div class="control-group">
-      <label class="control-label" for="select-rate">
-        <span id="lbl-rate">取樣率 Sampling Rate (Hz)</span>
-        <span class="sub-hint" id="val-rate-display">44100 Hz</span>
-      </label>
-      <select id="select-rate" onchange="onParamChange()">
-        <option value="1000">1,000 Hz (極低取樣 - 頻率嚴重混疊)</option>
-        <option value="2000">2,000 Hz (極低通話音質)</option>
-        <option value="4000">4,000 Hz (窄頻語音對講機)</option>
-        <option value="8000">8,000 Hz (電話通話品質)</option>
-        <option value="11025">11,025 Hz (早期收音機)</option>
-        <option value="22050">22,050 Hz (廣播 FM 品質)</option>
-        <option value="44100" selected>44,100 Hz (CD 標準高保真)</option>
-      </select>
-      <span class="sub-hint" id="hint-rate">每秒抽取聲音樣本的次數 (抽樣頻率)</span>
-    </div>
-
-    <!-- Bit Depth -->
-    <div class="control-group">
-      <label class="control-label" for="select-bits">
-        <span id="lbl-bits">位元深度 Bit Depth (Bits)</span>
-        <span class="sub-hint" id="val-bits-display">16 Bits</span>
-      </label>
-      <select id="select-bits" onchange="onParamChange()">
-        <option value="1">1 Bit (2 階 - 極端方波失真)</option>
-        <option value="2">2 Bits (4 階 - 粗糙階梯)</option>
-        <option value="3">3 Bits (8 階 - 8階中度失真)</option>
-        <option value="4">4 Bits (16 階 - 復古遊戲感)</option>
-        <option value="8">8 Bits (256 階 - 早期電腦聲)</option>
-        <option value="16" selected>16 Bits (65,536 階 - CD 高音質)</option>
-      </select>
-      <span class="sub-hint" id="hint-bits">控制振幅分割的細致程度 (量化階數)</span>
-    </div>
-  </div>
-
-  <!-- Inquiry Challenge Card for 8th Graders -->
-  <div class="challenge-box">
-    <div class="challenge-title">
-      <span class="material-icons">tips_and_updates</span>
-      <span id="txt-task-title">國中理化/科技小挑戰 (Inquiry Challenge)</span>
-    </div>
-    <div class="challenge-desc" id="txt-task-desc">
-      👉 試著將<b>「位元深度」</b>調成 <b>1 Bit</b> 並播放聲音！觀察繪圖區中的波形變成了什麼形狀？聽起來像什麼？（提示：量化階數只有 2 階，聲音會被強制變成方波機器人聲哦！）
-    </div>
-  </div>
-</div>
-
-<script>
-// Language State (zh: Traditional Chinese, en: English)
-let lang = 'zh';
-
-const I18N = {
-  zh: {
-    title: "聲音數位化實驗室",
-    subtitle: "探索模擬波形如何透過「取樣」與「量化」轉換為數位資料",
-    langBtn: "English",
-    hudSize: "預估檔案大小 (5秒容量)",
-    hudFidelity: "音質保真度 (Fidelity)",
-    hudLevels: "量化階階數 (Quantization Levels)",
-    badgeStereo: "5秒 Stereo 雙聲道",
-    play: "播放數位音效",
-    pause: "暫停播放",
-    modeDig: "目前播放：數位音 (按此切換原音)",
-    modeRaw: "目前播放：原始模擬音 (A/B 對比中)",
-    gridOn: "隱藏量化階梯網格",
-    gridOff: "顯示量化階梯線",
-    reset: "重設預設值",
-    source: "音源選擇 (Audio Source)",
-    hintSource: "選擇不同結構的模擬波形進行測試",
-    rate: "取樣率 Sampling Rate (Hz)",
-    hintRate: "每秒抽樣紀錄聲音振幅的次數",
-    bits: "位元深度 Bit Depth (Bits)",
-    hintBits: "振幅分割的解析度階數 ($2^{\\text{bits}}$)",
-    taskTitle: "💡 國中理化與資訊科技小挑戰",
-    taskDesc: "👉 試著將<b>「位元深度」</b>調成 <b>1 Bit</b> 並播放聲音！觀察繪圖區中的波形變成了什麼形狀？聽起來像什麼？（提示：量化階數只有 2 階，所有波形都被切成高低兩種數值！）"
-  },
-  en: {
-    title: "Audio Digitization Lab",
-    subtitle: "Explore how analog waves are converted into digital data via Sampling & Quantization",
-    langBtn: "中文",
-    hudSize: "Est. File Size (5s Clip)",
-    hudFidelity: "Audio Fidelity",
-    hudLevels: "Quantization Levels",
-    badgeStereo: "5s Stereo Audio",
-    play: "Play Digitized Sound",
-    pause: "Pause Audio",
-    modeDig: "Playing: Digitized (Click for Original)",
-    modeRaw: "Playing: Original Wave (A/B Test)",
-    gridOn: "Hide Quantization Grid",
-    gridOff: "Show Quantization Grid",
-    reset: "Reset Defaults",
-    source: "Audio Source",
-    hintSource: "Select analog sound wave type",
-    rate: "Sampling Rate (Hz)",
-    hintRate: "Number of snapshots taken per second",
-    bits: "Bit Depth (Bits)",
-    hintBits: "Resolution of amplitude levels ($2^{\\text{bits}}$)",
-    taskTitle: "💡 Science & Tech Inquiry Challenge",
-    taskDesc: "👉 Try setting <b>Bit Depth</b> to <b>1 Bit</b> and listen! What shape does the waveform become? (Hint: With only 2 quantization levels, any wave turns into a robotic square wave!)"
-  }
-};
-
-function toggleLanguage() {
-  lang = lang === 'zh' ? 'en' : 'zh';
-  updateLanguageUI();
-}
-
-function updateLanguageUI() {
-  const t = I18N[lang];
-  document.getElementById('txt-title').innerText = t.title;
-  document.getElementById('txt-subtitle').innerText = t.subtitle;
-  document.getElementById('txt-lang-btn').innerText = t.langBtn;
-  document.getElementById('lbl-hud-size').innerText = t.hudSize;
-  document.getElementById('lbl-hud-fidelity').innerText = t.hudFidelity;
-  document.getElementById('lbl-hud-levels').innerText = t.hudLevels;
-  document.getElementById('badge-size-mode').innerText = t.badgeStereo;
-  document.getElementById('txt-play').innerText = isPlaying ? t.pause : t.play;
-  document.getElementById('txt-mode').innerText = isOriginalMode ? t.modeRaw : t.modeDig;
-  document.getElementById('txt-grid').innerText = showGrid ? t.gridOn : t.gridOff;
-  document.getElementById('txt-reset').innerText = t.reset;
-  document.getElementById('lbl-source').innerText = t.source;
-  document.getElementById('hint-source').innerText = t.hintSource;
-  document.getElementById('lbl-rate').innerText = t.rate;
-  document.getElementById('hint-rate').innerText = t.hintRate;
-  document.getElementById('lbl-bits').innerText = t.bits;
-  document.getElementById('hint-bits').innerText = t.hintBits;
-  document.getElementById('txt-task-title').innerText = t.taskTitle;
-  document.getElementById('txt-task-desc').innerHTML = t.taskDesc;
-}
-
-// App State
-let isPlaying = false;
-let isOriginalMode = false;
-let showGrid = false;
-let animTime = 0;
-let audioCtx = null;
-let sourceNode = null;
-
-const canvas = document.getElementById('waveformCanvas');
-const ctx = canvas.getContext('2d');
-
-function getAudioSample(type, t) {
-  if (type === 'Sine') {
-    return Math.sin(2 * Math.PI * 440 * t);
-  } else if (type === 'Retro8Bit') {
-    const noteTime = (t * 4) % 4;
-    const freq = noteTime < 1 ? 261.63 : noteTime < 2 ? 329.63 : noteTime < 3 ? 392.00 : 523.25;
-    return Math.sin(2 * Math.PI * freq * t) > 0 ? 0.7 : -0.7;
-  } else if (type === 'SchoolBell') {
-    // 上下課西敏寺鐘聲 (E4 - G#4 - F#4 - B3, B3 - F#4 - G#4 - E4)
-    const bellFreqs = [329.63, 415.30, 369.99, 246.94, 246.94, 369.99, 415.30, 329.63];
-    const idx = Math.floor((t * 1.6) % bellFreqs.length);
-    const f = bellFreqs[idx];
-    const noteProgress = (t * 1.6) % 1.0;
-    const envelope = Math.exp(-noteProgress * 2.2); // Bell chime decay envelope
-    const b = Math.sin(2 * Math.PI * f * t);
-    const h1 = 0.35 * Math.sin(2 * Math.PI * f * 2.76 * t); // Metallic overtone
-    const h2 = 0.15 * Math.sin(2 * Math.PI * f * 5.4 * t);
-    return ((b + h1 + h2) / 1.4) * envelope;
-  } else {
-    // Classical Melody
-    const freqs = [329.63, 329.63, 349.23, 392.00, 392.00, 349.23, 329.63, 293.66];
-    const idx = Math.floor((t * 2) % freqs.length);
-    const f = freqs[idx];
-    const b = Math.sin(2 * Math.PI * f * t);
-    const h1 = 0.3 * Math.sin(2 * Math.PI * f * 2 * t);
-    const h2 = 0.15 * Math.sin(2 * Math.PI * f * 3 * t);
-    return (b + h1 + h2) / 1.45;
-  }
-}
-
-function updateMetrics() {
-  const rate = Number(document.getElementById('select-rate').value);
-  const bits = Number(document.getElementById('select-bits').value);
-  
-  // File size calculation (5 sec, stereo)
-  const sizeKB = (rate * bits * 2 * 5) / (8 * 1024);
-  document.getElementById('val-size').innerText = sizeKB >= 1024 ? `${(sizeKB / 1024).toFixed(2)} MB` : `${sizeKB.toFixed(1)} KB`;
-  
-  // Fidelity calculation
-  const fidelity = Math.round(((rate / 44100) * 0.5 + (bits / 16) * 0.5) * 100);
-  document.getElementById('val-fidelity').innerText = `${fidelity}%`;
-  
-  // Levels
-  const levels = Math.pow(2, bits);
-  document.getElementById('val-levels').innerText = `${levels.toLocaleString()} ${lang === 'zh' ? '階' : 'levels'}`;
-  document.getElementById('badge-levels').innerText = `${bits} Bits (2^${bits})`;
-
-  // Display badges & hints
-  document.getElementById('val-rate-display').innerText = `${rate.toLocaleString()} Hz`;
-  document.getElementById('val-bits-display').innerText = `${bits} Bits`;
-
-  const qualityBadge = document.getElementById('badge-quality');
-  if (rate >= 44100 && bits >= 16) {
-    qualityBadge.innerText = lang === 'zh' ? "CD 無損音質" : "CD Quality";
-    qualityBadge.style.background = "var(--badge-bg)";
-  } else if (rate <= 8000 || bits <= 2) {
-    qualityBadge.innerText = lang === 'zh' ? "⚠️ 高失真模式" : "⚠️ High Distortion";
-    qualityBadge.style.background = "#ffcdd2";
-    qualityBadge.style.color = "#b3261e";
-  } else {
-    qualityBadge.innerText = lang === 'zh' ? "壓縮廣播音質" : "Compressed Audio";
-    qualityBadge.style.background = "var(--surface-container-high)";
-    qualityBadge.style.color = "var(--on-surface-default)";
-  }
-}
-
-function onParamChange() {
-  updateMetrics();
-  if (isPlaying) {
-    playAudioSynth();
-  }
-}
-
-function togglePlay() {
-  isPlaying = !isPlaying;
-  document.getElementById('icon-play').innerText = isPlaying ? 'pause' : 'play_arrow';
-  document.getElementById('txt-play').innerText = isPlaying ? I18N[lang].pause : I18N[lang].play;
-  if (isPlaying) playAudioSynth();
-  else stopAudioSynth();
-}
-
-function toggleAudioMode() {
-  isOriginalMode = !isOriginalMode;
-  document.getElementById('btn-mode').classList.toggle('active', isOriginalMode);
-  document.getElementById('txt-mode').innerText = isOriginalMode ? I18N[lang].modeRaw : I18N[lang].modeDig;
-  if (isPlaying) playAudioSynth();
-}
-
-function toggleGrid() {
-  showGrid = !showGrid;
-  document.getElementById('btn-grid').classList.toggle('active', showGrid);
-  document.getElementById('txt-grid').innerText = showGrid ? I18N[lang].gridOn : I18N[lang].gridOff;
-}
-
-function resetDefaults() {
-  document.getElementById('select-source').value = "SchoolBell";
-  document.getElementById('select-rate').value = "44100";
-  document.getElementById('select-bits').value = "16";
-  isOriginalMode = false;
-  document.getElementById('btn-mode').classList.remove('active');
-  onParamChange();
-}
-
-function stopAudioSynth() {
-  if (sourceNode) {
-    try { sourceNode.stop(); } catch(e) {}
-    sourceNode.disconnect();
-    sourceNode = null;
-  }
-}
-
-function playAudioSynth() {
-  stopAudioSynth();
-  if (!isPlaying) return;
-
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
-
-  const duration = 5;
-  const targetRate = audioCtx.sampleRate;
-  const buffer = audioCtx.createBuffer(1, targetRate * duration, targetRate);
-  const data = buffer.getChannelData(0);
-
-  const sourceType = document.getElementById('select-source').value;
-  const effRate = Number(document.getElementById('select-rate').value);
-  const bits = Number(document.getElementById('select-bits').value);
-  const levels = Math.pow(2, bits);
-
-  for (let i = 0; i < data.length; i++) {
-    const t = i / targetRate;
-    if (isOriginalMode) {
-      data[i] = getAudioSample(sourceType, t);
-    } else {
-      const sampledT = Math.floor(t * effRate) / effRate;
-      const rawVal = getAudioSample(sourceType, sampledT);
-      const clamped = Math.min(1, Math.max(-1, rawVal));
-      const normalized = (clamped + 1) / 2;
-      const qNorm = Math.floor(normalized * (levels - 1)) / Math.max(1, levels - 1);
-      data[i] = qNorm * 2 - 1;
+      sourceNode = audioCtx.createBufferSource();
+      sourceNode.buffer = buffer;
+      sourceNode.loop = true;
+      sourceNode.connect(audioCtx.destination);
+      sourceNode.start();
     }
-  }
 
-  sourceNode = audioCtx.createBufferSource();
-  sourceNode.buffer = buffer;
-  sourceNode.loop = true;
-  sourceNode.connect(audioCtx.destination);
-  sourceNode.start();
-}
+    // Canvas Render Loop
+    function renderCanvas() {
+      const width = canvas.parentElement.clientWidth;
+      const height = 240;
+      canvas.width = width * (window.devicePixelRatio || 1);
+      canvas.height = height * (window.devicePixelRatio || 1);
 
-// Canvas Render Loop
-function renderCanvas() {
-  const width = canvas.parentElement.clientWidth;
-  const height = 240;
-  canvas.width = width * (window.devicePixelRatio || 1);
-  canvas.height = height * (window.devicePixelRatio || 1);
+      ctx.save();
+      ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
 
-  ctx.save();
-  ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+      ctx.clearRect(0, 0, width, height);
 
-  ctx.clearRect(0, 0, width, height);
+      const padL = 40, padR = 20, padT = 30, padB = 30;
+      const chartW = width - padL - padR;
+      const chartH = height - padT - padB;
+      const midY = padT + chartH / 2;
 
-  const padL = 40, padR = 20, padT = 30, padB = 30;
-  const chartW = width - padL - padR;
-  const chartH = height - padT - padB;
-  const midY = padT + chartH / 2;
+      const sourceType = document.getElementById('select-source').value;
+      const rate = Number(document.getElementById('select-rate').value);
+      const bits = Number(document.getElementById('select-bits').value);
+      const levels = Math.pow(2, bits);
 
-  const sourceType = document.getElementById('select-source').value;
-  const rate = Number(document.getElementById('select-rate').value);
-  const bits = Number(document.getElementById('select-bits').value);
-  const levels = Math.pow(2, bits);
+      // Draw Grid Lines
+      if (showGrid && levels <= 16) {
+        ctx.strokeStyle = "rgba(116, 119, 117, 0.25)";
+        ctx.lineWidth = 1;
+        for (let l = 0; l < levels; l++) {
+          const levelY = padT + chartH - (l / (levels - 1)) * chartH;
+          ctx.beginPath();
+          ctx.moveTo(padL, levelY);
+          ctx.lineTo(width - padR, levelY);
+          ctx.stroke();
 
-  // Draw Grid Lines
-  if (showGrid && levels <= 16) {
-    ctx.strokeStyle = "rgba(116, 119, 117, 0.25)";
-    ctx.lineWidth = 1;
-    for (let l = 0; l < levels; l++) {
-      const levelY = padT + chartH - (l / (levels - 1)) * chartH;
+          ctx.fillStyle = "rgba(116, 119, 117, 0.6)";
+          ctx.font = "10px sans-serif";
+          ctx.textAlign = "right";
+          ctx.fillText(`L${l}`, padL - 6, levelY + 3);
+        }
+      }
+
+      // Draw Axis
+      ctx.strokeStyle = "rgba(116, 119, 117, 0.4)";
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(padL, levelY);
-      ctx.lineTo(width - padR, levelY);
+      ctx.moveTo(padL, padT);
+      ctx.lineTo(padL, height - padB);
+      ctx.lineTo(width - padR, height - padB);
+      ctx.moveTo(padL, midY);
+      ctx.lineTo(width - padR, midY);
       ctx.stroke();
 
-      ctx.fillStyle = "rgba(116, 119, 117, 0.6)";
-      ctx.font = "10px sans-serif";
-      ctx.textAlign = "right";
-      ctx.fillText(`L${l}`, padL - 6, levelY + 3);
-    }
-  }
+      if (isPlaying) {
+        animTime += 0.00015;
+      }
+      const timeWindow = 0.010;
 
-  // Draw Axis
-  ctx.strokeStyle = "rgba(116, 119, 117, 0.4)";
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(padL, padT);
-  ctx.lineTo(padL, height - padB);
-  ctx.lineTo(width - padR, height - padB);
-  ctx.moveTo(padL, midY);
-  ctx.lineTo(width - padR, midY);
-  ctx.stroke();
-
-  if (isPlaying) {
-    animTime += 0.00015;
-  }
-  const timeWindow = 0.010;
-
-  // 1. Original Waveform (Light Gray)
-  ctx.strokeStyle = "rgba(100, 100, 100, 0.4)";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  for (let px = 0; px <= chartW; px += 2) {
-    const t = animTime + (px / chartW) * timeWindow;
-    const val = getAudioSample(sourceType, t);
-    const y = midY - val * (chartH / 2) * 0.85;
-    if (px === 0) ctx.moveTo(padL + px, y);
-    else ctx.lineTo(padL + px, y);
-  }
-  ctx.stroke();
-
-  // 2. Digitized Waveform (Staircase)
-  ctx.strokeStyle = isOriginalMode ? "#046e00" : "#0b57d0";
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-
-  const sampleDt = 1 / rate;
-  const startT = animTime;
-  const endT = animTime + timeWindow;
-  const firstSampleIdx = Math.floor(startT / sampleDt);
-  const lastSampleIdx = Math.ceil(endT / sampleDt);
-
-  let started = false;
-  let prevY = midY;
-
-  for (let i = firstSampleIdx; i <= lastSampleIdx; i++) {
-    const sampleT = i * sampleDt;
-    const rawVal = getAudioSample(sourceType, sampleT);
-    
-    let qVal = rawVal;
-    if (!isOriginalMode) {
-      const clamped = Math.min(1, Math.max(-1, rawVal));
-      const normalized = (clamped + 1) / 2;
-      const qNorm = Math.floor(normalized * (levels - 1)) / Math.max(1, levels - 1);
-      qVal = qNorm * 2 - 1;
-    }
-
-    const screenX = padL + ((sampleT - startT) / timeWindow) * chartW;
-    const screenY = midY - qVal * (chartH / 2) * 0.85;
-
-    if (!started) {
-      ctx.moveTo(screenX, screenY);
-      started = true;
-    } else {
-      ctx.lineTo(screenX, prevY);
-      ctx.lineTo(screenX, screenY);
-    }
-    prevY = screenY;
-
-    // Draw dots for sparse sample rates
-    if (chartW / (timeWindow * rate) > 8) {
-      ctx.save();
-      ctx.fillStyle = isOriginalMode ? "#046e00" : "#0b57d0";
+      // 1. Original Waveform (Light Gray)
+      ctx.strokeStyle = "rgba(100, 100, 100, 0.4)";
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.arc(screenX, screenY, 3, 0, Math.PI * 2);
-      ctx.fill();
+      for (let px = 0; px <= chartW; px += 2) {
+        const t = animTime + (px / chartW) * timeWindow;
+        const val = getAudioSample(sourceType, t);
+        const y = midY - val * (chartH / 2) * 0.85;
+        if (px === 0) ctx.moveTo(padL + px, y);
+        else ctx.lineTo(padL + px, y);
+      }
+      ctx.stroke();
+
+      // 2. Digitized Waveform (Staircase)
+      ctx.strokeStyle = isOriginalMode ? "#046e00" : "#0b57d0";
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+
+      const sampleDt = 1 / rate;
+      const startT = animTime;
+      const endT = animTime + timeWindow;
+      const firstSampleIdx = Math.floor(startT / sampleDt);
+      const lastSampleIdx = Math.ceil(endT / sampleDt);
+
+      let started = false;
+      let prevY = midY;
+
+      for (let i = firstSampleIdx; i <= lastSampleIdx; i++) {
+        const sampleT = i * sampleDt;
+        const rawVal = getAudioSample(sourceType, sampleT);
+
+        let qVal = rawVal;
+        if (!isOriginalMode) {
+          const clamped = Math.min(1, Math.max(-1, rawVal));
+          const normalized = (clamped + 1) / 2;
+          const qNorm = Math.floor(normalized * (levels - 1)) / Math.max(1, levels - 1);
+          qVal = qNorm * 2 - 1;
+        }
+
+        const screenX = padL + ((sampleT - startT) / timeWindow) * chartW;
+        const screenY = midY - qVal * (chartH / 2) * 0.85;
+
+        if (!started) {
+          ctx.moveTo(screenX, screenY);
+          started = true;
+        } else {
+          ctx.lineTo(screenX, prevY);
+          ctx.lineTo(screenX, screenY);
+        }
+        prevY = screenY;
+
+        // Draw dots for sparse sample rates
+        if (chartW / (timeWindow * rate) > 8) {
+          ctx.save();
+          ctx.fillStyle = isOriginalMode ? "#046e00" : "#0b57d0";
+          ctx.beginPath();
+          ctx.arc(screenX, screenY, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+      ctx.stroke();
+
       ctx.restore();
+      requestAnimationFrame(renderCanvas);
     }
-  }
-  ctx.stroke();
 
-  ctx.restore();
-  requestAnimationFrame(renderCanvas);
-}
-
-// Initialization
-updateMetrics();
-renderCanvas();
-</script>
+    // Initialization
+    renderFormula();
+    updateMetrics();
+    renderCanvas();
+  </script>
 
 </body>
+
 </html>
